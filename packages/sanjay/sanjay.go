@@ -13,6 +13,7 @@ func HelloSanjay() {
 }
 
 const new_line = "\n"
+const carriage_return = "\r\n"
 const separator = string(os.PathSeparator)
 
 func check(e error) {
@@ -37,20 +38,28 @@ func HelpingToolGetCounter() string {
 
 // Reads the current value from the file
 func readValue() (int, error) {
-	data, err := os.ReadFile(counter_filename)
-	if err != nil {
-		if os.IsNotExist(err) {
-			// File doesn't exist, create it with default value "0"
-			return 0, writeValue(0)
-		}
-		return 0, err
-	}
+  data, err := os.ReadFile(counter_filename)
+  if err != nil {
+    if os.IsNotExist(err) {
+      // File doesn't exist, create it with default value "0"
+      return 0, writeValue(0)
+    }
+    return 0, err
+  }
+  str := string(data)
 
-	value, err := strconv.Atoi(strings.Split(string(data), new_line)[0])
-	if err != nil {
-		return 0, fmt.Errorf("error converting value from file: %w", err)
-	}
-	return value, nil
+  // handle new line cleanup
+  if strings.Contains(str, carriage_return) {
+    str = strings.ReplaceAll(str, carriage_return, "")
+  } else if strings.Contains(str, new_line) {
+    str = strings.ReplaceAll(str, new_line, "")
+  }
+
+  value, err := strconv.Atoi(str)
+  if err != nil {
+    return 0, fmt.Errorf("error converting value from file: %w", err)
+  }
+  return value, nil
 }
 
 // Writes the given value to the file
